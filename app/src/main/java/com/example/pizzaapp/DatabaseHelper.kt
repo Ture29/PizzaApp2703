@@ -1,10 +1,13 @@
 package com.example.pizzaapp
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.widget.Toast
 
-class DatabaseHelper(context: Context): SQLiteOpenHelper(
+class DatabaseHelper(var context: Context): SQLiteOpenHelper(
     context,DATABASE_NAME, null,DATABASE_VERSION){
     companion object{
         private  val DATABASE_NAME = "pizza"
@@ -34,17 +37,79 @@ class DatabaseHelper(context: Context): SQLiteOpenHelper(
     }
 
     //login check
-    fun checkLogin(email:String, password:String):Boolean{
+    fun checkLogin(email:String, password:String):Boolean {
         val colums = arrayOf(COLUMN_NAME)
         val db = this.readableDatabase
         //selection kriteria
         val selection = "$COLUMN_EMAIL = ? AND $COLUMN_PASSWORD = ?"
         //SELECTION arguments
-        val selectionArgs = arrayOf(email,password)
+        val selectionArgs = arrayOf(email, password)
 
-        val cursor = db.query(TABLE_ACCOUNT, //table to query
-    colums,//colums to return
-    selection,//columns for WHERE clause
-    selectionArgs,// )
+        val cursor = db.query(
+            TABLE_ACCOUNT, //table to query
+            colums,//colums to return
+            selection,//columns for WHERE clause
+            selectionArgs,//
+            null,
+            null,
+            null
+        )
+        val cursorCount = cursor.count
+        cursor.close()
+        db.close()
+
+        //check data available or not
+        if (cursorCount > 0)
+            return true
+        else
+            return false
+    }
+
+
+    //add user
+    fun addAccount(email: String, name:String, level:String, password: String){
+        val db=this.readableDatabase
+        val values =ContentValues()
+        values.put(COLUMN_EMAIL, email)
+        values.put(COLUMN_NAME, name)
+        values.put(COLUMN_LEVEL, level)
+        values.put(COLUMN_PASSWORD, password)
+        val result = db.insert(TABLE_ACCOUNT,null, values)
+        //show message
+        if(result==(0).toLong()){
+            Toast.makeText(context, "Register Failed", Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(context, "Register Succes, "+
+                "please login using your new account", Toast.LENGTH_SHORT).show()
+        }
+
+        db.close()
+    }
+    @SuppressLint("Range")
+    fun checkData(email:String):String {
+        val colums = arrayOf(COLUMN_NAME)
+        val db = this.readableDatabase
+        //selection kriteria
+        val selection = "$COLUMN_EMAIL = ?"
+        //SELECTION arguments
+        val selectionArgs = arrayOf(email)
+        var name:String=""
+
+        val cursor = db.query(
+            TABLE_ACCOUNT, //table to query
+            colums,//colums to return
+            selection,//columns for WHERE clause
+            selectionArgs,//
+            null,
+            null,
+            null)
+
+        if(cursor.moveToFirst()){
+          name= cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+        }
+        cursor.close()
+        db.close()
+        return name
+
     }
 }

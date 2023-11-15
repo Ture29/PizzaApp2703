@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,11 +21,43 @@ class LoginActivity : AppCompatActivity() {
         val txtPassword:EditText = findViewById(R.id.editTextPassword)
         //instance button login
         val btnLogin:Button = findViewById(R.id.buttonLogin)
-
+        val btnRegister:TextView= findViewById(R.id.textView10)
+        //even register diklik
+        btnRegister.setOnClickListener{
+            val intentRegister=Intent(this@LoginActivity, MainActivity::class.java)
+            startActivity(intentRegister)
+        }
         //event button login
         btnLogin.setOnClickListener {
-            val intentLogin = Intent(this@LoginActivity, MainActivity::class.java)
-            startActivity(intentLogin)
+            //object class databaseHelper
+            val databaseHelper = DatabaseHelper(this)
+
+            //check data
+            val data:String = databaseHelper.checkData("stevi.ema@amikom.ac.id")
+            Toast.makeText(this@LoginActivity,"Result : " + data,
+                Toast.LENGTH_SHORT).show()
+            if(data == null){
+                //insert data
+                databaseHelper.addAccount("stevi.ema@amikom.ac.id",
+                    "Stevi Ema W","Cashier","12345")
+            }
+
+            val email = txtUsername.text.toString().trim()
+            val password = txtPassword.text.toString().trim()
+
+            //check login
+            val result: Boolean = databaseHelper.checkLogin(email,password)
+            if (result == true){
+                Toast.makeText(this@LoginActivity,"Login Success ",
+                    Toast.LENGTH_SHORT).show()
+                val intentLogin = Intent(this@LoginActivity,
+                    MainActivity::class.java)
+                startActivity(intentLogin)
+
+            }else{
+                Toast.makeText(this@LoginActivity,"Login Failed, Try Again !!!",
+                    Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
