@@ -1,5 +1,7 @@
 package com.example.pizzaapp
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -34,17 +36,64 @@ class DatabaseHelper(context: Context): SQLiteOpenHelper(
     }
 
     //login check
-    fun checkLogin(email:String, password:String):Boolean{
+    fun checkLogin(email:String, password:String) {
         val colums = arrayOf(COLUMN_NAME)
         val db = this.readableDatabase
         //selection kriteria
         val selection = "$COLUMN_EMAIL = ? AND $COLUMN_PASSWORD = ?"
         //SELECTION arguments
-        val selectionArgs = arrayOf(email,password)
+        val selectionArgs = arrayOf(email, password)
 
-        val cursor = db.query(TABLE_ACCOUNT, //table to query
-    colums,//colums to return
-    selection,//columns for WHERE clause
-    selectionArgs,// )
+        val cursor = db.query(
+            TABLE_ACCOUNT, //table to query
+            colums,//colums to return
+            selection,//columns for WHERE clause
+            selectionArgs,//
+            null,
+            null,
+            null
+        )
+        val cursorCount = cursor.count
+        cursor.close()
+        db.close()
+
+    }
+    //add user
+    fun addAccount(email: String, name:String, level:String, password: String){
+        val db=this.readableDatabase
+        val values =ContentValues()
+        values.put(COLUMN_EMAIL, email)
+        values.put(COLUMN_NAME, name)
+        values.put(COLUMN_LEVEL, level)
+        values.put(COLUMN_PASSWORD, password)
+         db.insert(TABLE_ACCOUNT,null, values)
+        db.close()
+    }
+    @SuppressLint("Range")
+    fun checkData(email:String):String {
+        val colums = arrayOf(COLUMN_NAME)
+        val db = this.readableDatabase
+        //selection kriteria
+        val selection = "$COLUMN_EMAIL = ?"
+        //SELECTION arguments
+        val selectionArgs = arrayOf(email)
+        var name:String=""
+
+        val cursor = db.query(
+            TABLE_ACCOUNT, //table to query
+            colums,//colums to return
+            selection,//columns for WHERE clause
+            selectionArgs,//
+            null,
+            null,
+            null)
+
+        if(cursor.moveToFirst()){
+          name= cursor.getString(cursor.getColumnIndex(COLUMN_NAME))
+        }
+        cursor.close()
+        db.close()
+        return name
+
     }
 }
